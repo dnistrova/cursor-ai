@@ -100,11 +100,15 @@ class ProductionConfig(Config):
     # In production, these should be set via environment variables
     @property
     def SQLALCHEMY_DATABASE_URI(self):
-        return os.environ.get('DATABASE_URL')
+        return os.environ.get('DATABASE_URL', '')
     
     # Enforce HTTPS
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    
+    # Production caching
+    CACHE_TYPE = 'RedisCache'
 
 
 config = {

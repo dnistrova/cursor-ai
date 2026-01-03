@@ -1,0 +1,43 @@
+# Dependencies
+node_modules
+
+# Build outputs (we build inside Docker)
+dist
+build
+
+# Development files
+.env
+.env.local
+.env.*.local
+
+# Test artifacts
+playwright-report
+test-results
+coverage
+.nyc_output
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+docs
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+

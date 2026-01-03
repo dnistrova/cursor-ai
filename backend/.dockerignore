@@ -1,0 +1,48 @@
+# Virtual environment
+venv
+.venv
+env
+.env
+
+# Python cache
+__pycache__
+*.py[cod]
+*$py.class
+*.pyc
+
+# Test artifacts
+.pytest_cache
+.coverage
+htmlcov
+.tox
+.nox
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+docs
+
+# Instance folder (SQLite db in dev)
+instance
+
+# Logs
+*.log
+
+# Distribution
+dist
+build
+*.egg-info
+

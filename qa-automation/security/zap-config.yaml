@@ -1,0 +1,173 @@
+# =============================================================================
+# OWASP ZAP Configuration
+# =============================================================================
+# Configuration for OWASP ZAP security scanning.
+# Covers OWASP Top 10 vulnerabilities.
+# =============================================================================
+
+env:
+  contexts:
+    - name: "cursor-ai"
+      urls:
+        - "http://localhost:5000"
+        - "http://localhost:3000"
+      includePaths:
+        - "http://localhost:5000/api/.*"
+        - "http://localhost:3000/.*"
+      excludePaths:
+        - ".*\\.js$"
+        - ".*\\.css$"
+        - ".*\\.png$"
+        - ".*\\.jpg$"
+        - ".*\\.ico$"
+      authentication:
+        method: "json"
+        parameters:
+          loginUrl: "http://localhost:5000/api/v1/auth/login"
+          loginRequestData: '{"email":"{%username%}","password":"{%password%}"}'
+          tokenName: "access_token"
+          tokenType: "Bearer"
+      users:
+        - name: "test-user"
+          credentials:
+            username: "test@example.com"
+            password: "TestPass123!"
+        - name: "admin-user"
+          credentials:
+            username: "admin@example.com"
+            password: "AdminPass123!"
+
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+jobs:
+  # ===========================================================================
+  # PASSIVE SCAN (Header analysis, information disclosure)
+  # ===========================================================================
+  - type: passiveScan-config
+    parameters:
+      maxAlertsPerRule: 10
+      scanOnlyInScope: true
+
+  # ===========================================================================
+  # SPIDER (Discover endpoints)
+  # ===========================================================================
+  - type: spider
+    parameters:
+      context: "cursor-ai"
+      user: "test-user"
+      maxDuration: 5
+      maxDepth: 5
+      maxChildren: 10
+
+  # ===========================================================================
+  # AJAX SPIDER (JavaScript-rendered content)
+  # ===========================================================================
+  - type: spiderAjax
+    parameters:
+      context: "cursor-ai"
+      user: "test-user"
+      maxDuration: 5
+      maxCrawlDepth: 5
+      numberOfBrowsers: 2
+
+  # ===========================================================================
+  # ACTIVE SCAN (OWASP Top 10)
+  # ===========================================================================
+  - type: activeScan
+    parameters:
+      context: "cursor-ai"
+      user: "test-user"
+      policy: "API-Scan"
+      maxRuleDurationInMins: 5
+      maxScanDurationInMins: 30
+
+  # ===========================================================================
+  # API SCAN
+  # ===========================================================================
+  - type: openapi
+    parameters:
+      apiUrl: "http://localhost:5000/api/v1/swagger.json"
+      context: "cursor-ai"
+
+  # ===========================================================================
+  # REPORT GENERATION
+  # ===========================================================================
+  - type: report
+    parameters:
+      template: "traditional-html"
+      reportDir: "reports/security"
+      reportFile: "zap-report.html"
+    risks:
+      - high
+      - medium
+      - low
+      - info
+
+  - type: report
+    parameters:
+      template: "traditional-json"
+      reportDir: "reports/security"
+      reportFile: "zap-report.json"
+
+# =============================================================================
+# SCAN POLICIES
+# =============================================================================
+policies:
+  - name: "API-Scan"
+    rules:
+      # SQL Injection
+      - id: 40018
+        strength: "high"
+        threshold: "low"
+      # Cross-Site Scripting (XSS)
+      - id: 40012
+        strength: "high"
+        threshold: "low"
+      # Path Traversal
+      - id: 6
+        strength: "high"
+        threshold: "medium"
+      # Remote File Inclusion
+      - id: 7
+        strength: "high"
+        threshold: "medium"
+      # Server Side Include
+      - id: 40009
+        strength: "medium"
+        threshold: "medium"
+      # External Redirect
+      - id: 20019
+        strength: "medium"
+        threshold: "medium"
+      # CRLF Injection
+      - id: 40003
+        strength: "medium"
+        threshold: "medium"
+      # Parameter Tampering
+      - id: 40008
+        strength: "medium"
+        threshold: "medium"
+      # LDAP Injection
+      - id: 40015
+        strength: "medium"
+        threshold: "medium"
+      # XML Injection
+      - id: 90017
+        strength: "medium"
+        threshold: "medium"
+
+# =============================================================================
+# ALERT THRESHOLDS
+# =============================================================================
+alertFilters:
+  # Ignore informational alerts for static assets
+  - ruleId: 10015  # Incomplete or No Cache-control
+    url: ".*\\.(js|css|png|jpg)$"
+    action: "REMOVE"
+  - ruleId: 10021  # X-Content-Type-Options Header Missing
+    url: ".*\\.(js|css|png|jpg)$"
+    action: "REMOVE"
+

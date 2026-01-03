@@ -1,0 +1,165 @@
+# =============================================================================
+# DOCKER COMPOSE - Local Development & Testing
+# =============================================================================
+# Services:
+# - frontend: React app (Vite dev server or nginx)
+# - backend: Flask API (gunicorn)
+# - db: PostgreSQL database
+# - redis: Redis cache & message broker
+# - celery: Background task worker
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ===========================================================================
+  # FRONTEND
+  # ===========================================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+      args:
+        VITE_BASE_PATH: /
+    ports:
+      - "3000:8080"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://backend:5000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - app-network
+
+  # ===========================================================================
+  # BACKEND
+  # ===========================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - FLASK_ENV=development
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - JWT_SECRET_KEY=jwt-dev-secret-change-in-production
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/appdb
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - app-network
+    volumes:
+      - ./backend:/app:ro  # Read-only for development
+
+  # ===========================================================================
+  # DATABASE
+  # ===========================================================================
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=appdb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # ===========================================================================
+  # REDIS
+  # ===========================================================================
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # ===========================================================================
+  # CELERY WORKER
+  # ===========================================================================
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    command: celery -A app.celery_app:celery worker --loglevel=info
+    depends_on:
+      - backend
+      - redis
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/appdb
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+    networks:
+      - app-network
+
+  # ===========================================================================
+  # CELERY BEAT (Scheduler)
+  # ===========================================================================
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    command: celery -A app.celery_app:celery beat --loglevel=info
+    depends_on:
+      - backend
+      - redis
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/appdb
+      - CELERY_BROKER_URL=redis://redis:6379/1
+    networks:
+      - app-network
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+volumes:
+  postgres-data:
+  redis-data:
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  app-network:
+    driver: bridge
+

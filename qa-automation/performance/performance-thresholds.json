@@ -1,0 +1,222 @@
+{
+  "version": "1.0.0",
+  "description": "Performance thresholds for QA automation",
+  "lastUpdated": "2024-01-15",
+  
+  "frontend": {
+    "lighthouse": {
+      "performance": {
+        "min": 80,
+        "target": 90,
+        "description": "Lighthouse performance score"
+      },
+      "accessibility": {
+        "min": 90,
+        "target": 100,
+        "description": "Lighthouse accessibility score"
+      },
+      "bestPractices": {
+        "min": 80,
+        "target": 90,
+        "description": "Lighthouse best practices score"
+      },
+      "seo": {
+        "min": 80,
+        "target": 90,
+        "description": "Lighthouse SEO score"
+      }
+    },
+    
+    "coreWebVitals": {
+      "LCP": {
+        "good": 2500,
+        "needsImprovement": 4000,
+        "unit": "ms",
+        "description": "Largest Contentful Paint"
+      },
+      "FID": {
+        "good": 100,
+        "needsImprovement": 300,
+        "unit": "ms",
+        "description": "First Input Delay"
+      },
+      "CLS": {
+        "good": 0.1,
+        "needsImprovement": 0.25,
+        "unit": "score",
+        "description": "Cumulative Layout Shift"
+      },
+      "FCP": {
+        "good": 1800,
+        "needsImprovement": 3000,
+        "unit": "ms",
+        "description": "First Contentful Paint"
+      },
+      "TTFB": {
+        "good": 800,
+        "needsImprovement": 1800,
+        "unit": "ms",
+        "description": "Time to First Byte"
+      },
+      "TBT": {
+        "good": 200,
+        "needsImprovement": 600,
+        "unit": "ms",
+        "description": "Total Blocking Time"
+      }
+    },
+    
+    "bundleSize": {
+      "total": {
+        "warn": 500,
+        "error": 1000,
+        "unit": "KB",
+        "description": "Total bundle size (gzipped)"
+      },
+      "javascript": {
+        "warn": 300,
+        "error": 500,
+        "unit": "KB",
+        "description": "JavaScript bundle size"
+      },
+      "css": {
+        "warn": 50,
+        "error": 100,
+        "unit": "KB",
+        "description": "CSS bundle size"
+      }
+    }
+  },
+  
+  "backend": {
+    "api": {
+      "responseTime": {
+        "p50": {
+          "target": 100,
+          "max": 200,
+          "unit": "ms",
+          "description": "50th percentile response time"
+        },
+        "p95": {
+          "target": 300,
+          "max": 500,
+          "unit": "ms",
+          "description": "95th percentile response time"
+        },
+        "p99": {
+          "target": 500,
+          "max": 1000,
+          "unit": "ms",
+          "description": "99th percentile response time"
+        }
+      },
+      "errorRate": {
+        "target": 0.1,
+        "max": 1.0,
+        "unit": "%",
+        "description": "Error rate percentage"
+      },
+      "throughput": {
+        "min": 100,
+        "target": 500,
+        "unit": "req/s",
+        "description": "Requests per second"
+      }
+    },
+    
+    "database": {
+      "queryTime": {
+        "simple": {
+          "max": 10,
+          "unit": "ms",
+          "description": "Simple query execution time"
+        },
+        "complex": {
+          "max": 100,
+          "unit": "ms",
+          "description": "Complex query execution time"
+        }
+      },
+      "connectionPool": {
+        "min": 5,
+        "max": 20,
+        "description": "Connection pool size"
+      }
+    }
+  },
+  
+  "loadTest": {
+    "scenarios": {
+      "smoke": {
+        "vus": 1,
+        "duration": "30s",
+        "thresholds": {
+          "http_req_duration": ["p(95)<500"],
+          "errors": ["rate<0.01"]
+        }
+      },
+      "load": {
+        "vus": 20,
+        "duration": "5m",
+        "thresholds": {
+          "http_req_duration": ["p(95)<500", "p(99)<1000"],
+          "errors": ["rate<0.01"],
+          "http_reqs": ["rate>10"]
+        }
+      },
+      "stress": {
+        "vus": 100,
+        "duration": "10m",
+        "thresholds": {
+          "http_req_duration": ["p(95)<1000"],
+          "errors": ["rate<0.05"],
+          "http_reqs": ["rate>50"]
+        }
+      },
+      "spike": {
+        "vus": 200,
+        "duration": "2m",
+        "thresholds": {
+          "http_req_duration": ["p(95)<2000"],
+          "errors": ["rate<0.10"]
+        }
+      }
+    }
+  },
+  
+  "qualityGates": {
+    "blocking": {
+      "testCoverage": {
+        "min": 80,
+        "description": "Minimum code coverage percentage"
+      },
+      "criticalVulnerabilities": {
+        "max": 0,
+        "description": "No critical security vulnerabilities"
+      },
+      "highVulnerabilities": {
+        "max": 0,
+        "description": "No high security vulnerabilities"
+      },
+      "accessibilityScore": {
+        "min": 90,
+        "description": "Minimum accessibility score"
+      }
+    },
+    "warning": {
+      "codeComplexity": {
+        "max": 10,
+        "description": "Maximum cyclomatic complexity"
+      },
+      "duplicateCode": {
+        "max": 5,
+        "description": "Maximum duplicate code percentage"
+      },
+      "technicalDebt": {
+        "max": "2h",
+        "description": "Maximum technical debt per 1000 lines"
+      }
+    }
+  }
+}
+

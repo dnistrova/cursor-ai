@@ -1,0 +1,167 @@
+# =============================================================================
+# PYLINT CONFIGURATION FOR QA
+# =============================================================================
+# Strict configuration for Python code quality checks.
+# Target: Code complexity < 10, No critical issues
+# =============================================================================
+
+[MAIN]
+# Specify a score threshold under which the program will exit with error.
+fail-under=8.0
+
+# Python version
+py-version=3.11
+
+# Add files or directories to the blacklist
+ignore=CVS,migrations,venv,.venv,__pycache__
+
+# Files or directories matching the regex patterns are skipped
+ignore-patterns=test_.*,conftest.py
+
+# Pickle collected data for later comparisons
+persistent=yes
+
+# Limit number of child processes
+jobs=4
+
+[MESSAGES CONTROL]
+# Disable specific messages
+disable=
+    missing-module-docstring,
+    missing-class-docstring,
+    too-few-public-methods,
+    fixme,
+    line-too-long,
+
+# Enable all checker messages
+enable=
+    useless-suppression,
+
+[FORMAT]
+# Maximum number of characters on a single line
+max-line-length=120
+
+# Maximum number of lines in a module
+max-module-lines=1000
+
+# String used as indentation unit
+indent-string='    '
+
+[BASIC]
+# Naming conventions
+good-names=i,j,k,ex,_,id,db,app
+
+# Regular expression matching correct variable names
+variable-rgx=[a-z_][a-z0-9_]{1,30}$
+
+# Regular expression matching correct function names
+function-rgx=[a-z_][a-z0-9_]{2,50}$
+
+# Regular expression matching correct method names
+method-rgx=[a-z_][a-z0-9_]{2,50}$
+
+# Regular expression matching correct class names
+class-rgx=[A-Z_][a-zA-Z0-9]+$
+
+# Regular expression matching correct constant names
+const-rgx=(([A-Z_][A-Z0-9_]*)|(__.*__))$
+
+[DESIGN]
+# Maximum number of arguments for function / method (target: <= 5)
+max-args=6
+
+# Maximum number of locals for function / method body
+max-locals=15
+
+# Maximum number of return statements in function / method body
+max-returns=6
+
+# Maximum number of branch for function / method body (complexity)
+max-branches=12
+
+# Maximum number of statements in function / method body
+max-statements=50
+
+# Maximum number of public methods for a class
+max-public-methods=20
+
+# Maximum number of attributes for a class
+max-attributes=10
+
+# Minimum number of public methods for a class
+min-public-methods=1
+
+# Maximum level of nesting
+max-nested-blocks=4
+
+[CLASSES]
+# List of method names used to declare instance attributes
+defining-attr-methods=__init__,__new__,setUp,__post_init__
+
+# List of valid names for the first argument in a class method
+valid-classmethod-first-arg=cls
+
+# List of valid names for the first argument in a metaclass class method
+valid-metaclass-classmethod-first-arg=cls
+
+[IMPORTS]
+# Deprecated modules which should not be used
+deprecated-modules=optparse,tkinter.tix
+
+# Force import order
+known-standard-library=
+known-third-party=flask,sqlalchemy,marshmallow,pytest,celery,redis
+
+[SIMILARITIES]
+# Minimum lines number of a similarity (duplicate code detection)
+min-similarity-lines=6
+
+# Ignore comments when computing similarities
+ignore-comments=yes
+
+# Ignore docstrings when computing similarities
+ignore-docstrings=yes
+
+# Ignore imports when computing similarities
+ignore-imports=yes
+
+[TYPECHECK]
+# List of members which are set dynamically and are not in the class
+generated-members=REQUEST,acl_users,aq_parent,db,session
+
+# List of module names for which member attributes should not be checked
+ignored-modules=flask_sqlalchemy
+
+[SPELLING]
+# Spelling dictionary name
+spelling-dict=
+
+[LOGGING]
+# Format style used to check logging format string
+logging-format-style=new
+
+[MISCELLANEOUS]
+# List of note tags to take in consideration
+notes=FIXME,XXX,TODO,BUG,HACK
+
+[REFACTORING]
+# Maximum number of nested blocks for function / method body
+max-nested-blocks=4
+
+# Complete name of functions that never returns
+never-returning-functions=sys.exit,argparse.parse_error
+
+[REPORTS]
+# Set the output format
+output-format=colorized
+
+# Include a full report
+reports=yes
+
+# Template for the full report
+score=yes
+
+[EXCEPTIONS]
+# Exceptions that will emit a warning when caught
+overgeneral-exceptions=builtins.BaseException,builtins.Exception
+
