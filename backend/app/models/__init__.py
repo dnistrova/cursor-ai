@@ -5,6 +5,8 @@ from app.models.ticket import (
     TicketComment, TicketAttachment, TicketHistory, TicketAssignment
 )
 from app.models.blog import BlogPost, BlogComment, Category, Tag
+from app.models.project import Project
+from app.models.task import Task, TaskTag
 
 __all__ = [
     # User
@@ -25,5 +27,9 @@ __all__ = [
     'BlogComment',
     'Category',
     'Tag',
+    # Project & Task
+    'Project',
+    'Task',
+    'TaskTag',
 ]
 

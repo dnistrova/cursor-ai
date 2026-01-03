@@ -1,12 +1,16 @@
-# Cursor AI Frontend Application
+# Cursor AI Full-Stack Application
 
-A comprehensive React application built with TypeScript and Tailwind CSS, featuring product cards, Kanban board, social feed, team dashboard, analytics, and full E2E test coverage.
+A comprehensive full-stack application featuring a React frontend and Flask REST API backend. Includes product cards, Kanban board, social feed, team dashboard, analytics, Customer Support Ticket System, and Blog API with full E2E/unit test coverage.
 
 ---
 
-🌐 **Live Demo:** [https://dnistrova.github.io/cursor-ai/](https://dnistrova.github.io/cursor-ai/)
+## 🌐 Live Demo
 
-📊 **Playwright Report:** [https://dnistrova.github.io/cursor-ai/playwright-report/](https://dnistrova.github.io/cursor-ai/playwright-report/)
+| Service | URL |
+|---------|-----|
+| **Frontend** | [https://dnistrova.github.io/cursor-ai/](https://dnistrova.github.io/cursor-ai/) |
+| **Playwright Report** | [https://dnistrova.github.io/cursor-ai/playwright-report/](https://dnistrova.github.io/cursor-ai/playwright-report/) |
+| **Static API Docs** | [https://dnistrova.github.io/cursor-ai/api-docs/](https://dnistrova.github.io/cursor-ai/api-docs/) |
 
 ---
 
@@ -78,6 +82,7 @@ A comprehensive React application built with TypeScript and Tailwind CSS, featur
 
 ## 🛠️ Tech Stack
 
+### Frontend
 | Technology | Purpose |
 |------------|---------|
 | **React 19** | UI library |
@@ -87,6 +92,19 @@ A comprehensive React application built with TypeScript and Tailwind CSS, featur
 | **Tailwind CSS 4** | Styling |
 | **Playwright** | E2E testing |
 
+### Backend
+| Technology | Purpose |
+|------------|---------|
+| **Flask** | REST API framework |
+| **SQLAlchemy** | ORM & database |
+| **Marshmallow** | Serialization/validation |
+| **Flask-JWT-Extended** | Authentication |
+| **Flask-Caching + Redis** | Performance caching |
+| **Flasgger** | Swagger documentation |
+| **Celery** | Async task processing |
+| **PostgreSQL** | Production database |
+| **pytest** | Unit testing |
+
 ---
 
 ## 📦 Setup Instructions
@@ -94,12 +112,14 @@ A comprehensive React application built with TypeScript and Tailwind CSS, featur
 ### Prerequisites
 - Node.js 18+
 - npm 9+
+- Python 3.11+
+- PostgreSQL (production) or SQLite (development)
 
-### Installation
+### Frontend Installation
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/dnistrova/cursor-ai.git
 cd cursor-ai
 
 # Navigate to frontend
@@ -112,19 +132,42 @@ npm install
 npx playwright install chromium
 ```
 
+### Backend Installation
+
+```bash
+# Navigate to backend
+cd backend
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Create .env file
+cp .env.example .env
+# Edit .env with your configuration
+```
+
 ### Development
 
 ```bash
-# Start development server
+# Start frontend (from /frontend)
 npm run dev
-
 # Open http://localhost:5174
+
+# Start backend (from /backend)
+flask run
+# API at http://localhost:5000
+# Swagger docs at http://localhost:5000/docs/
 ```
 
 ### Building for Production
 
 ```bash
-# Build the project
+# Build frontend
+cd frontend
 npm run build
 
 # Preview production build
@@ -134,28 +177,17 @@ npm run preview
 ### Running Tests
 
 ```bash
-# Run all E2E tests
+# Frontend E2E tests
+cd frontend
 npm run test:e2e
+npm run test:e2e:headed   # See browser
+npm run test:e2e:ui       # Interactive UI
+npm run test:e2e:report   # View report
 
-# Run tests in headed mode (see browser)
-npm run test:e2e:headed
-
-# Run tests with UI mode
-npm run test:e2e:ui
-
-# Run tests in debug mode
-npm run test:e2e:debug
-
-# View test report
-npm run test:e2e:report
-
-# Run specific browser
-npm run test:e2e:chromium
-npm run test:e2e:firefox
-npm run test:e2e:webkit
-
-# Run mobile tests
-npm run test:e2e:mobile
+# Backend unit tests
+cd backend
+pytest tests/ -v
+pytest tests/ -v --cov=app --cov-report=html  # With coverage
 ```
 
 ---
@@ -238,6 +270,46 @@ cursor-ai/
 
 ---
 
+## 🔌 Backend API Endpoints
+
+### Authentication
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/auth/register` | Register new user |
+| POST | `/api/v1/auth/login` | Login and get JWT |
+| POST | `/api/v1/auth/refresh` | Refresh access token |
+| GET | `/api/v1/auth/me` | Get current user |
+
+### Customer Support Tickets
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/tickets` | List tickets (paginated) |
+| POST | `/api/v1/tickets` | Create new ticket |
+| GET | `/api/v1/tickets/<id>` | Get ticket details |
+| PUT | `/api/v1/tickets/<id>` | Update ticket |
+| DELETE | `/api/v1/tickets/<id>` | Delete ticket |
+| PUT | `/api/v1/tickets/<id>/status` | Update status |
+| PUT | `/api/v1/tickets/<id>/priority` | Update priority |
+| POST | `/api/v1/tickets/<id>/assign` | Assign to agent |
+| GET | `/api/v1/tickets/<id>/comments` | List comments |
+| POST | `/api/v1/tickets/<id>/comments` | Add comment |
+| GET | `/api/v1/tickets/<id>/history` | Get ticket history |
+
+### Blog API
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/posts` | List posts (cached, paginated) |
+| POST | `/api/v1/posts` | Create post |
+| GET | `/api/v1/posts/<id>` | Get post (cached) |
+| PUT | `/api/v1/posts/<id>` | Update post |
+| DELETE | `/api/v1/posts/<id>` | Delete post |
+| GET | `/api/v1/categories` | List categories |
+| GET | `/api/v1/search?q=keyword` | Search posts |
+
+📚 **API Documentation:** Run backend locally and visit `http://localhost:5000/docs/`
+
+---
+
 ## 🛤️ Routes
 
 Uses **HashRouter** for GitHub Pages compatibility.
@@ -291,6 +363,8 @@ Uses **HashRouter** for GitHub Pages compatibility.
 
 ## 📊 Test Coverage
 
+### Frontend E2E Tests
+
 | Test Suite | Tests | Description |
 |------------|-------|-------------|
 | `accessibility` | 17 | WCAG compliance, ARIA, keyboard navigation |
@@ -301,23 +375,64 @@ Uses **HashRouter** for GitHub Pages compatibility.
 | `settings-form` | 13 | Settings panel, tabs, form controls |
 | `social-feed` | 10 | Posts, interactions, content display |
 
-**Total: 102 tests**
+**Frontend Total: 102 E2E tests**
+
+### Backend Unit Tests
+
+| Test Suite | Tests | Description |
+|------------|-------|-------------|
+| `test_auth` | 8+ | Registration, login, JWT, validation |
+| `test_tickets` | 34+ | CRUD, status transitions, RBAC, SLA |
+| `test_blog_api` | 20+ | Posts, comments, categories, caching |
+
+**Backend Total: 60+ pytest tests**
 
 ---
 
 ## 🔄 CI/CD Pipeline
 
-### Continuous Integration (`ci.yml`)
-- **Lint**: ESLint validation
-- **Build**: Production build
-- **E2E Tests**: Playwright tests with Chromium
-- Artifacts: Build output, Playwright reports
+### Pipeline Performance
 
-### Deploy to GitHub Pages (`deploy-pages.yml`)
-- Builds production bundle with base path `/cursor-ai/`
-- Runs E2E tests (continues on failure)
-- Generates Playwright HTML report
-- Deploys app + report to GitHub Pages
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| **Total Time** | ~18 min | ~7 min | 61% faster ⚡ |
+| **Build Time** | 5 min | 2 min | Caching |
+| **Test Time** | 10 min | 4 min | Parallel execution |
+| **Security Scans** | Manual | Automated | ✅ |
+| **Rollback** | Manual | Automated | ✅ |
+
+### Workflows
+
+| Workflow | File | Purpose |
+|----------|------|---------|
+| **CI** | `ci.yml` | Lint, Build, Test (Frontend + Backend) |
+| **CI Optimized** | `ci-optimized.yml` | Full pipeline with security & deploy |
+| **GitHub Pages** | `deploy-pages.yml` | Deploy frontend to GitHub Pages |
+| **Docker Deploy** | `deploy-docker.yml` | Container build & registry push |
+
+### Key Optimizations
+
+1. **Dependency Caching** - npm, pip, Playwright browsers cached
+2. **Parallel Execution** - E2E tests sharded across 3 workers
+3. **Security Scanning** - npm audit, pip-audit, CodeQL SAST
+4. **Docker Layer Caching** - 70% faster container builds
+5. **Blue-Green Deployment** - Zero-downtime with auto-rollback
+6. **Slack Notifications** - Configurable alerts for failures
+
+### Running Locally
+
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Run tests in containers
+docker-compose run backend pytest
+```
+
+📚 See [`docs/CICD_OPTIMIZATION.md`](docs/CICD_OPTIMIZATION.md) for detailed optimization guide.
 
 ---
 

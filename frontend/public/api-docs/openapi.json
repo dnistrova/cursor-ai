@@ -1,0 +1,706 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cursor AI Full-Stack Application API",
+    "description": "REST API for the Cursor AI application including Customer Support Ticket System and Blog Platform.\n\n## Features\n- **Authentication**: JWT-based authentication with refresh tokens\n- **Tickets**: Complete ticket management system with SLA tracking\n- **Blog**: Full-featured blog with posts, comments, and categories\n- **Users**: User management with role-based access control\n\n## Authentication\nMost endpoints require JWT authentication. Include the token in the Authorization header:\n```\nAuthorization: Bearer <your_token>\n```",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support",
+      "url": "https://github.com/dnistrova/cursor-ai"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000/api/v1",
+      "description": "Local Development Server"
+    }
+  ],
+  "tags": [
+    {"name": "Authentication", "description": "User authentication and authorization"},
+    {"name": "Users", "description": "User management"},
+    {"name": "Tickets", "description": "Support ticket management"},
+    {"name": "Blog Posts", "description": "Blog post operations"},
+    {"name": "Comments", "description": "Comment management"},
+    {"name": "Categories", "description": "Category management"},
+    {"name": "Search", "description": "Search functionality"}
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register a new user",
+        "description": "Create a new user account",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegister"
+              },
+              "example": {
+                "email": "user@example.com",
+                "username": "johndoe",
+                "password": "SecurePass123!",
+                "first_name": "John",
+                "last_name": "Doe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/User"}
+              }
+            }
+          },
+          "400": {"description": "Validation error"},
+          "409": {"description": "User already exists"}
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User login",
+        "description": "Authenticate user and return JWT tokens",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              },
+              "example": {
+                "email": "user@example.com",
+                "password": "SecurePass123!"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/LoginResponse"}
+              }
+            }
+          },
+          "401": {"description": "Invalid credentials"}
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Refresh access token",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "Token refreshed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "access_token": {"type": "string"},
+                    "token_type": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get current user",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "Current user data",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/User"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "List all users",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "page", "in": "query", "schema": {"type": "integer", "default": 1}},
+          {"name": "per_page", "in": "query", "schema": {"type": "integer", "default": 20}}
+        ],
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/UserList"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get user by ID",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "200": {"description": "User data"},
+          "404": {"description": "User not found"}
+        }
+      },
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update user",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/UserUpdate"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "User updated"},
+          "403": {"description": "Forbidden"}
+        }
+      },
+      "delete": {
+        "tags": ["Users"],
+        "summary": "Delete user",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "204": {"description": "User deleted"},
+          "403": {"description": "Forbidden"}
+        }
+      }
+    },
+    "/tickets": {
+      "get": {
+        "tags": ["Tickets"],
+        "summary": "List tickets",
+        "description": "Get tickets based on user role and filters. Admins see all, agents see assigned + unassigned, customers see their own.",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "ticket_number", "in": "query", "schema": {"type": "string"}},
+          {"name": "keyword", "in": "query", "schema": {"type": "string"}},
+          {"name": "status", "in": "query", "schema": {"type": "array", "items": {"type": "string", "enum": ["open", "assigned", "in_progress", "waiting", "resolved", "closed"]}}},
+          {"name": "priority", "in": "query", "schema": {"type": "array", "items": {"type": "string", "enum": ["low", "medium", "high", "urgent"]}}},
+          {"name": "category", "in": "query", "schema": {"type": "array", "items": {"type": "string"}}},
+          {"name": "page", "in": "query", "schema": {"type": "integer", "default": 1}},
+          {"name": "per_page", "in": "query", "schema": {"type": "integer", "default": 20}}
+        ],
+        "responses": {
+          "200": {
+            "description": "List of tickets",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/TicketList"}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Tickets"],
+        "summary": "Create a new ticket",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/TicketCreate"},
+              "example": {
+                "subject": "Cannot login to my account",
+                "description": "I am getting an error message when trying to login. The error says 'Invalid credentials' but I'm sure my password is correct.",
+                "priority": "high",
+                "category": "technical",
+                "customer_email": "customer@example.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ticket created",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/Ticket"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tickets/{id}": {
+      "get": {
+        "tags": ["Tickets"],
+        "summary": "Get ticket details",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "200": {"description": "Ticket details"},
+          "404": {"description": "Not found"}
+        }
+      },
+      "put": {
+        "tags": ["Tickets"],
+        "summary": "Update ticket",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "200": {"description": "Ticket updated"}
+        }
+      },
+      "delete": {
+        "tags": ["Tickets"],
+        "summary": "Delete ticket (admin only)",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "204": {"description": "Ticket deleted"}
+        }
+      }
+    },
+    "/tickets/{id}/status": {
+      "put": {
+        "tags": ["Tickets"],
+        "summary": "Update ticket status",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["status"],
+                "properties": {
+                  "status": {"type": "string", "enum": ["open", "assigned", "in_progress", "waiting", "resolved", "closed", "reopened"]},
+                  "reason": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Status updated"},
+          "400": {"description": "Invalid status transition"}
+        }
+      }
+    },
+    "/tickets/{id}/priority": {
+      "put": {
+        "tags": ["Tickets"],
+        "summary": "Update ticket priority",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["priority", "reason"],
+                "properties": {
+                  "priority": {"type": "string", "enum": ["low", "medium", "high", "urgent"]},
+                  "reason": {"type": "string", "minLength": 5}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Priority updated"}
+        }
+      }
+    },
+    "/tickets/{id}/assign": {
+      "post": {
+        "tags": ["Tickets"],
+        "summary": "Assign ticket to agent",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["agent_id"],
+                "properties": {
+                  "agent_id": {"type": "integer"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Ticket assigned"}
+        }
+      }
+    },
+    "/tickets/{id}/comments": {
+      "get": {
+        "tags": ["Tickets"],
+        "summary": "Get ticket comments",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "200": {"description": "List of comments"}
+        }
+      },
+      "post": {
+        "tags": ["Tickets"],
+        "summary": "Add comment to ticket",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["content"],
+                "properties": {
+                  "content": {"type": "string", "minLength": 1, "maxLength": 5000},
+                  "is_internal": {"type": "boolean", "default": false}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Comment added"}
+        }
+      }
+    },
+    "/tickets/{id}/history": {
+      "get": {
+        "tags": ["Tickets"],
+        "summary": "Get ticket history",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "200": {"description": "Ticket history"}
+        }
+      }
+    },
+    "/posts": {
+      "get": {
+        "tags": ["Blog Posts"],
+        "summary": "List blog posts",
+        "parameters": [
+          {"name": "page", "in": "query", "schema": {"type": "integer", "default": 1}},
+          {"name": "per_page", "in": "query", "schema": {"type": "integer", "default": 20}},
+          {"name": "category", "in": "query", "schema": {"type": "string"}},
+          {"name": "tag", "in": "query", "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {"description": "List of posts"}
+        }
+      },
+      "post": {
+        "tags": ["Blog Posts"],
+        "summary": "Create a blog post",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/PostCreate"}
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Post created"}
+        }
+      }
+    },
+    "/posts/{id}": {
+      "get": {
+        "tags": ["Blog Posts"],
+        "summary": "Get post by ID",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "200": {"description": "Post details"},
+          "404": {"description": "Not found"}
+        }
+      },
+      "put": {
+        "tags": ["Blog Posts"],
+        "summary": "Update a post",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "200": {"description": "Post updated"}
+        }
+      },
+      "delete": {
+        "tags": ["Blog Posts"],
+        "summary": "Delete a post",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "204": {"description": "Post deleted"}
+        }
+      }
+    },
+    "/posts/{id}/comments": {
+      "get": {
+        "tags": ["Comments"],
+        "summary": "Get post comments",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "200": {"description": "List of comments"}
+        }
+      },
+      "post": {
+        "tags": ["Comments"],
+        "summary": "Add comment to post",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["content"],
+                "properties": {
+                  "content": {"type": "string"},
+                  "parent_id": {"type": "integer"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Comment added"}
+        }
+      }
+    },
+    "/categories": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "List all categories",
+        "responses": {
+          "200": {"description": "List of categories"}
+        }
+      },
+      "post": {
+        "tags": ["Categories"],
+        "summary": "Create a category",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {"type": "string"},
+                  "description": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Category created"}
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "Search posts",
+        "parameters": [
+          {"name": "q", "in": "query", "required": true, "schema": {"type": "string"}, "description": "Search keyword"},
+          {"name": "category", "in": "query", "schema": {"type": "string"}},
+          {"name": "page", "in": "query", "schema": {"type": "integer", "default": 1}}
+        ],
+        "responses": {
+          "200": {"description": "Search results"}
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "UserRegister": {
+        "type": "object",
+        "required": ["email", "username", "password"],
+        "properties": {
+          "email": {"type": "string", "format": "email"},
+          "username": {"type": "string", "minLength": 3},
+          "password": {"type": "string", "minLength": 8},
+          "first_name": {"type": "string"},
+          "last_name": {"type": "string"}
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": {"type": "string", "format": "email"},
+          "password": {"type": "string"}
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "access_token": {"type": "string"},
+          "refresh_token": {"type": "string"},
+          "token_type": {"type": "string"},
+          "user": {"$ref": "#/components/schemas/User"}
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "email": {"type": "string"},
+          "username": {"type": "string"},
+          "first_name": {"type": "string"},
+          "last_name": {"type": "string"},
+          "role": {"type": "string", "enum": ["customer", "agent", "admin"]},
+          "is_active": {"type": "boolean"},
+          "created_at": {"type": "string", "format": "date-time"}
+        }
+      },
+      "UserUpdate": {
+        "type": "object",
+        "properties": {
+          "first_name": {"type": "string"},
+          "last_name": {"type": "string"},
+          "avatar_url": {"type": "string"}
+        }
+      },
+      "UserList": {
+        "type": "object",
+        "properties": {
+          "users": {"type": "array", "items": {"$ref": "#/components/schemas/User"}},
+          "total": {"type": "integer"},
+          "page": {"type": "integer"},
+          "per_page": {"type": "integer"}
+        }
+      },
+      "TicketCreate": {
+        "type": "object",
+        "required": ["subject", "description", "category", "customer_email"],
+        "properties": {
+          "subject": {"type": "string", "minLength": 5, "maxLength": 200},
+          "description": {"type": "string", "minLength": 20, "maxLength": 5000},
+          "priority": {"type": "string", "enum": ["low", "medium", "high", "urgent"], "default": "medium"},
+          "category": {"type": "string", "enum": ["technical", "billing", "general", "feature_request"]},
+          "customer_email": {"type": "string", "format": "email"}
+        }
+      },
+      "Ticket": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "ticket_number": {"type": "string"},
+          "subject": {"type": "string"},
+          "description": {"type": "string"},
+          "status": {"type": "string"},
+          "priority": {"type": "string"},
+          "category": {"type": "string"},
+          "customer_email": {"type": "string"},
+          "assigned_to_id": {"type": "integer"},
+          "sla_response_due": {"type": "string", "format": "date-time"},
+          "sla_resolution_due": {"type": "string", "format": "date-time"},
+          "created_at": {"type": "string", "format": "date-time"}
+        }
+      },
+      "TicketList": {
+        "type": "object",
+        "properties": {
+          "status": {"type": "string"},
+          "data": {
+            "type": "object",
+            "properties": {
+              "tickets": {"type": "array", "items": {"$ref": "#/components/schemas/Ticket"}},
+              "total": {"type": "integer"},
+              "page": {"type": "integer"},
+              "per_page": {"type": "integer"},
+              "pages": {"type": "integer"}
+            }
+          }
+        }
+      },
+      "PostCreate": {
+        "type": "object",
+        "required": ["title", "content"],
+        "properties": {
+          "title": {"type": "string", "minLength": 5, "maxLength": 200},
+          "content": {"type": "string", "minLength": 50},
+          "excerpt": {"type": "string", "maxLength": 500},
+          "featured_image": {"type": "string", "format": "uri"},
+          "category_id": {"type": "integer"},
+          "tag_ids": {"type": "array", "items": {"type": "integer"}},
+          "status": {"type": "string", "enum": ["draft", "published"]}
+        }
+      }
+    }
+  }
+}
+

@@ -16,21 +16,21 @@ task_assignees = db.Table(
 task_tags = db.Table(
     'task_tags',
     db.Column('task_id', db.Integer, db.ForeignKey('tasks.id'), primary_key=True),
-    db.Column('tag_id', db.Integer, db.ForeignKey('tags.id'), primary_key=True)
+    db.Column('tag_id', db.Integer, db.ForeignKey('task_tags_table.id'), primary_key=True)
 )
 
 
-class Tag(db.Model):
+class TaskTag(db.Model):
     """Tag model for categorizing tasks."""
     
-    __tablename__ = 'tags'
+    __tablename__ = 'task_tags_table'
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
     color = db.Column(db.String(7), default='#6366f1')
     
     def __repr__(self):
-        return f'<Tag {self.name}>'
+        return f'<TaskTag {self.name}>'
 
 
 class Task(db.Model):
@@ -69,7 +69,7 @@ class Task(db.Model):
         backref=db.backref('assigned_tasks', lazy='dynamic')
     )
     tags = db.relationship(
-        'Tag',
+        'TaskTag',
         secondary=task_tags,
         backref=db.backref('tasks', lazy='dynamic')
     )

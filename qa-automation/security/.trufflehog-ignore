@@ -1,0 +1,57 @@
+# =============================================================================
+# TruffleHog Ignore Patterns
+# =============================================================================
+# Paths to exclude from secret scanning
+# =============================================================================
+
+# Dependencies
+node_modules/
+venv/
+.venv/
+__pycache__/
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# Test fixtures and mocks
+**/test_fixtures/
+**/fixtures/
+**/__mocks__/
+
+# Documentation with example secrets
+docs/examples/
+*.md
+
+# Lock files (may contain hashes)
+package-lock.json
+poetry.lock
+Pipfile.lock
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+
+# Git
+.git/
+
+# Cache
+.cache/
+.pytest_cache/
+.mypy_cache/
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# Playwright
+playwright-report/
+test-results/
+
+# Logs
+*.log
+logs/
+

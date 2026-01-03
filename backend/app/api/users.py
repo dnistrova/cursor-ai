@@ -9,6 +9,120 @@ from app.schemas import UserSchema, UserUpdateSchema
 from app import db
 
 
+# =============================================================================
+# CURRENT USER ENDPOINTS (/users/me)
+# =============================================================================
+
+@api_bp.route('/users/me', methods=['GET'])
+@jwt_required()
+@swag_from({
+    'tags': ['Users'],
+    'summary': 'Get current user profile',
+    'description': 'Get the authenticated user\'s profile',
+    'security': [{'Bearer': []}],
+    'responses': {
+        200: {'description': 'Current user profile'},
+        401: {'description': 'Unauthorized'}
+    }
+})
+def get_current_user_profile():
+    """Get current user's profile."""
+    user_id = get_jwt_identity()
+    user = User.query.get_or_404(user_id)
+    return jsonify(UserSchema().dump(user)), 200
+
+
+@api_bp.route('/users/me', methods=['PUT'])
+@jwt_required()
+@swag_from({
+    'tags': ['Users'],
+    'summary': 'Update current user profile',
+    'description': 'Update the authenticated user\'s profile',
+    'security': [{'Bearer': []}],
+    'responses': {
+        200: {'description': 'Profile updated'},
+        400: {'description': 'Validation error'},
+        401: {'description': 'Unauthorized'}
+    }
+})
+def update_current_user_profile():
+    """Update current user's profile."""
+    user_id = get_jwt_identity()
+    user = User.query.get_or_404(user_id)
+    
+    data = request.json or {}
+    
+    # Update allowed fields
+    allowed_fields = ['first_name', 'last_name', 'avatar_url']
+    for field in allowed_fields:
+        if field in data:
+            setattr(user, field, data[field])
+    
+    db.session.commit()
+    return jsonify(UserSchema().dump(user)), 200
+
+
+@api_bp.route('/users/me/password', methods=['POST'])
+@jwt_required()
+@swag_from({
+    'tags': ['Users'],
+    'summary': 'Change password',
+    'description': 'Change the authenticated user\'s password',
+    'security': [{'Bearer': []}],
+    'responses': {
+        200: {'description': 'Password changed'},
+        400: {'description': 'Invalid current password'},
+        401: {'description': 'Unauthorized'}
+    }
+})
+def change_password():
+    """Change current user's password."""
+    user_id = get_jwt_identity()
+    user = User.query.get_or_404(user_id)
+    
+    data = request.json or {}
+    current_password = data.get('current_password')
+    new_password = data.get('new_password')
+    
+    if not current_password or not new_password:
+        return jsonify({'error': 'Current and new password required'}), 400
+    
+    if not user.check_password(current_password):
+        return jsonify({'error': 'Invalid current password'}), 400
+    
+    user.set_password(new_password)
+    db.session.commit()
+    
+    return jsonify({'message': 'Password changed successfully'}), 200
+
+
+@api_bp.route('/users/me', methods=['DELETE'])
+@jwt_required()
+@swag_from({
+    'tags': ['Users'],
+    'summary': 'Delete current user account',
+    'description': 'Soft delete the authenticated user\'s account',
+    'security': [{'Bearer': []}],
+    'responses': {
+        204: {'description': 'Account deleted'},
+        401: {'description': 'Unauthorized'}
+    }
+})
+def delete_current_user():
+    """Delete current user's account (soft delete)."""
+    user_id = get_jwt_identity()
+    user = User.query.get_or_404(user_id)
+    
+    user.is_active = False
+    db.session.commit()
+    
+    return '', 204
+
+
+# =============================================================================
+# USER MANAGEMENT ENDPOINTS
+# =============================================================================
+
 @api_bp.route('/users', methods=['GET'])
 @jwt_required()
 @swag_from({
@@ -48,7 +162,14 @@ from app import db
     }
 })
 def get_users():
-    """Get all users."""
+    """Get all users (admin only)."""
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    
+    # Only admins can list all users
+    if not current_user or not current_user.is_admin:
+        return jsonify({'error': 'Forbidden', 'message': 'Admin access required'}), 403
+    
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
     
@@ -89,11 +210,19 @@ def get_users():
             'description': 'User data',
             'schema': {'$ref': '#/definitions/User'}
         },
+        403: {'description': 'Forbidden'},
         404: {'description': 'User not found'}
     }
 })
 def get_user(user_id):
     """Get a user by ID."""
+    current_user_id = get_jwt_identity()
+    current_user = User.query.get(current_user_id)
+    
+    # Users can only view their own profile, admins can view any
+    if current_user_id != user_id and not current_user.is_admin:
+        return jsonify({'error': 'Forbidden', 'message': 'Access denied'}), 403
+    
     user = User.query.get_or_404(user_id)
     return jsonify(UserSchema().dump(user)), 200
 

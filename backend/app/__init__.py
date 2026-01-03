@@ -78,16 +78,47 @@ def create_app(config_name='default'):
     def index():
         return {
             'status': 'success',
-            'message': 'Customer Support Ticket System API',
+            'message': 'Cursor AI Full-Stack Application API',
             'version': '1.0.0',
+            'documentation': '/docs/',
             'endpoints': {
-                'docs': '/docs/',
-                'api': '/api/v1/',
-                'auth': {
+                'authentication': {
                     'register': 'POST /api/v1/auth/register',
                     'login': 'POST /api/v1/auth/login',
+                    'refresh': 'POST /api/v1/auth/refresh',
+                    'me': 'GET /api/v1/auth/me',
                 },
-                'tickets': 'GET/POST /api/v1/tickets',
+                'users': {
+                    'list': 'GET /api/v1/users',
+                    'get': 'GET /api/v1/users/<id>',
+                    'update': 'PUT /api/v1/users/<id>',
+                    'delete': 'DELETE /api/v1/users/<id>',
+                },
+                'tickets': {
+                    'list': 'GET /api/v1/tickets',
+                    'create': 'POST /api/v1/tickets',
+                    'get': 'GET /api/v1/tickets/<id>',
+                    'update': 'PUT /api/v1/tickets/<id>',
+                    'delete': 'DELETE /api/v1/tickets/<id>',
+                    'status': 'PUT /api/v1/tickets/<id>/status',
+                    'priority': 'PUT /api/v1/tickets/<id>/priority',
+                    'assign': 'POST /api/v1/tickets/<id>/assign',
+                    'comments': 'GET/POST /api/v1/tickets/<id>/comments',
+                    'history': 'GET /api/v1/tickets/<id>/history',
+                },
+                'blog': {
+                    'posts': 'GET/POST /api/v1/posts',
+                    'post': 'GET/PUT/DELETE /api/v1/posts/<id>',
+                    'post_by_slug': 'GET /api/v1/posts/<slug>',
+                    'comments': 'GET/POST /api/v1/posts/<id>/comments',
+                    'delete_comment': 'DELETE /api/v1/comments/<id>',
+                },
+                'categories': {
+                    'list': 'GET /api/v1/categories',
+                    'create': 'POST /api/v1/categories',
+                },
+                'search': 'GET /api/v1/search?q=<keyword>',
+                'health': 'GET /health',
             }
         }
     
