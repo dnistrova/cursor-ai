@@ -106,5 +106,3 @@ export function ProjectCard({ project, members, onClick }: ProjectCardProps) {
     </button>
   );
 }
-
-

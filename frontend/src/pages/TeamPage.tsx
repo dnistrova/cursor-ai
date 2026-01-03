@@ -5,5 +5,3 @@ export function TeamPage() {
 }
 
 export default TeamPage;
-
-

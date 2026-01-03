@@ -195,5 +195,3 @@ export function FloatingActionButton({ onClick, icon, label = 'Add' }: FloatingA
     </button>
   );
 }
-
-

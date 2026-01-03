@@ -436,5 +436,3 @@ export function TeamDashboard({ teamName = 'Acme Team' }: TeamDashboardProps) {
 }
 
 export default TeamDashboard;
-
-

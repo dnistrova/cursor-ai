@@ -354,5 +354,3 @@ export function UserProfile({
 }
 
 export default UserProfile;
-
-

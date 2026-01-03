@@ -166,5 +166,3 @@ export function MemberGrid({ members, onMemberClick }: MemberGridProps) {
     </div>
   );
 }
-
-

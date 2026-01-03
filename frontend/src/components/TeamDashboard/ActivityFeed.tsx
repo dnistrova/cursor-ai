@@ -206,5 +206,3 @@ export function ActivityTimeline({ activities, groupByDate = true }: ActivityTim
     </div>
   );
 }
-
-

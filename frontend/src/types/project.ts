@@ -74,5 +74,3 @@ export const projectColors = [
   '#06b6d4', // Cyan
   '#3b82f6', // Blue
 ];
-
-

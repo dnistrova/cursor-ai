@@ -42,5 +42,3 @@ export const statusColors: Record<MemberStatus, string> = {
   busy: 'bg-rose-500',
   offline: 'bg-slate-400',
 };
-
-

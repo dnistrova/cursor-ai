@@ -114,5 +114,3 @@ export function StatusDot({ status, pulse = false, className = '' }: StatusDotPr
     </span>
   );
 }
-
-

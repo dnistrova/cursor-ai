@@ -6,5 +6,3 @@ export { TeamMembers, MemberGrid } from './TeamMembers';
 export { ProgressChart, WeeklyProgress } from './ProgressChart';
 export { ActivityFeed, ActivityTimeline } from './ActivityFeed';
 export { QuickActions, FloatingActionButton } from './QuickActions';
-
-
